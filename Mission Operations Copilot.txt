@@ -1,0 +1,1495 @@
+# TECHFEST 2026–27
+
+# SPACE TECHNOLOGY HACKATHON
+
+# ST-10 — MISSION OPERATIONS COPILOT WITH EVIDENCE-GROUNDED DECISIONS
+
+## FINAL ANTIGRAVITY BUILD SPECIFICATION
+
+---
+
+# 0. INSTRUCTION TO ANTIGRAVITY
+
+Build the complete working prototype described in this specification.
+
+This is a **hackathon project**, not a production spacecraft-control system.
+
+The implementation must prioritize:
+
+1. Evidence grounding
+2. Traceability
+3. Safety
+4. Retrieval accuracy
+5. Operator workflow
+6. Auditability
+7. Working demonstration
+8. Testing
+9. UI polish
+
+Do not build a generic chatbot with a space-themed interface.
+
+Build an **operator investigation and decision-support system with an AI copilot**.
+
+All mission data must be simulated.
+
+The application must NEVER connect to or issue commands to real spacecraft or hardware.
+
+---
+
+# 1. PROBLEM
+
+Mission operators deal with large amounts of:
+
+* Telemetry
+* Mission logs
+* Procedures
+* Historical incidents
+* Technical information
+
+When an anomaly occurs, operators need to quickly determine:
+
+* What happened?
+* When did it happen?
+* Which subsystem is affected?
+* What evidence supports the observation?
+* Has something similar happened before?
+* Which procedure applies?
+* What should be investigated next?
+
+The system must help operators investigate anomalies while preserving evidence and human oversight.
+
+---
+
+# 2. CORE PRODUCT
+
+Build:
+
+> **Mission Operations Copilot with Evidence-Grounded Decisions**
+
+The copilot must:
+
+* Accept or identify a mission anomaly.
+* Retrieve relevant telemetry.
+* Retrieve relevant mission logs.
+* Retrieve applicable procedures.
+* Retrieve similar historical incidents.
+* Correlate events over time.
+* Explain the anomaly.
+* Show supporting evidence.
+* Suggest diagnostic steps.
+* Generate an auditable timeline.
+* Record the investigation in an audit trail.
+* Clearly distinguish facts from AI-generated recommendations.
+
+The AI is an **operator assistant**, not an autonomous controller.
+
+---
+
+# 3. NON-NEGOTIABLE SAFETY RULE
+
+The system must NOT:
+
+* Send spacecraft commands.
+* Execute spacecraft commands.
+* Connect to real spacecraft.
+* Connect to real mission-control systems.
+* Control hardware.
+* Request real spacecraft credentials.
+* Perform autonomous mission actions.
+
+Every action is simulated.
+
+Display prominently:
+
+> **SIMULATION / DECISION SUPPORT ONLY**
+
+And:
+
+> **AI recommendations require operator review.**
+
+---
+
+# 4. EVIDENCE-GROUNDED AI
+
+This is the central feature.
+
+Every important AI claim must be supported by retrieved evidence.
+
+The AI must distinguish:
+
+### OBSERVED FACT
+
+Directly supported by mission data.
+
+### EVIDENCE
+
+The actual telemetry/log/procedure/incident supporting the statement.
+
+### INFERENCE
+
+Reasoning derived from evidence.
+
+### RECOMMENDATION
+
+Suggested diagnostic action.
+
+### CONFIDENCE
+
+Confidence associated with the inference/recommendation.
+
+### LIMITATIONS
+
+What the system cannot establish from the available evidence.
+
+---
+
+# 5. EXAMPLE OF CORRECT OUTPUT
+
+For an abnormal battery temperature:
+
+### Observed Facts
+
+* Battery current increased from 15.8A to 18.7A.
+* Battery temperature increased by 8°C.
+* FDIR generated a power subsystem warning.
+
+### Evidence
+
+* `TEL-4821`
+* `TEL-4830`
+* `LOG-223`
+* `PWR-204`
+* `INC-102`
+
+### Inference
+
+> Elevated power consumption may be contributing to the observed battery temperature increase.
+
+### Recommendation
+
+> Check battery load and compare current draw against the expected operating range.
+
+### Confidence
+
+> 82% — Medium/High
+
+### Limitation
+
+> Available data does not establish definitive root cause.
+
+Never convert an inference into an unsupported fact.
+
+---
+
+# 6. FAILURE BEHAVIOR
+
+If evidence is insufficient, the system must say:
+
+> **INSUFFICIENT EVIDENCE**
+
+> The available mission data does not provide enough evidence to determine the root cause. Additional telemetry or operator investigation is required.
+
+Never force the LLM to produce an answer.
+
+"Unknown" is preferable to hallucination.
+
+---
+
+# 7. ARCHITECTURE
+
+Use this architecture:
+
+```text
+                  ┌─────────────────────────────┐
+                  │       React Frontend        │
+                  │                             │
+                  │ Mission Dashboard           │
+                  │ Anomaly Center              │
+                  │ Investigation Workspace     │
+                  │ Evidence Explorer            │
+                  │ Telemetry Charts             │
+                  │ Timeline                     │
+                  │ Audit Trail                  │
+                  └──────────────┬──────────────┘
+                                 │
+                                 ▼
+                  ┌─────────────────────────────┐
+                  │        FastAPI Backend      │
+                  │                             │
+                  │ Investigation API            │
+                  │ Copilot API                  │
+                  │ Telemetry API                │
+                  │ Evidence API                 │
+                  │ Timeline API                 │
+                  │ Audit API                    │
+                  └──────────────┬──────────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+              ▼                  ▼                  ▼
+       ┌────────────┐     ┌────────────┐     ┌────────────┐
+       │ RAG Engine │     │ Correlation│     │ Audit      │
+       │            │     │ Engine     │     │ Engine     │
+       │ Retrieval  │     │ Telemetry  │     │ Events     │
+       │ Embeddings │     │ Logs       │     │ Actions    │
+       │ Evidence   │     │ Incidents  │     │ Sources    │
+       └─────┬──────┘     └─────┬──────┘     └────────────┘
+             │                  │
+             └─────────┬────────┘
+                       ▼
+              ┌──────────────────┐
+              │ Data Layer       │
+              │ PostgreSQL       │
+              │ Vector Search    │
+              │ Telemetry        │
+              │ Logs             │
+              │ Procedures       │
+              │ Incidents        │
+              └──────────────────┘
+```
+
+---
+
+# 8. TECH STACK
+
+## Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* Recharts or equivalent charting library
+* Lucide icons
+
+## Backend
+
+* Python
+* FastAPI
+* Pydantic
+* SQLAlchemy
+
+## Database
+
+Preferred:
+
+* PostgreSQL
+* pgvector
+
+For a lightweight local implementation:
+
+* Chroma may be used.
+
+## AI
+
+Use a replaceable LLM abstraction.
+
+The application must not hard-code provider-specific logic throughout the codebase.
+
+Use environment variables for API configuration.
+
+Never commit API keys.
+
+---
+
+# 9. DATASET
+
+Create a realistic simulated mission dataset.
+
+Do not use generic lorem ipsum data.
+
+Create:
+
+* Telemetry
+* Mission logs
+* Procedures
+* Historical incidents
+
+---
+
+# 10. TELEMETRY
+
+Include parameters such as:
+
+## POWER
+
+* Battery voltage
+* Battery current
+* Battery temperature
+* State of charge
+* Solar array current
+
+## THERMAL
+
+* Component temperature
+* Radiator temperature
+* Thermal margin
+
+## COMMUNICATION
+
+* Signal strength
+* Packet loss
+* Link status
+* Data rate
+
+## ATTITUDE
+
+* Gyroscope values
+* Reaction wheel speed
+* Attitude error
+
+## PAYLOAD
+
+* Payload temperature
+* Processing load
+* Sensor status
+
+Telemetry records must contain:
+
+```json
+{
+  "timestamp": "...",
+  "spacecraft_id": "SC-01",
+  "subsystem": "POWER",
+  "parameter": "battery_current",
+  "value": 18.7,
+  "unit": "A",
+  "status": "WARNING"
+}
+```
+
+---
+
+# 11. MISSION LOGS
+
+Each log should include:
+
+* Timestamp
+* Severity
+* Subsystem
+* Event ID
+* Message
+* Source
+
+Example:
+
+```text
+14:30:12 POWER INFO
+Battery current increased from 15.8A to 18.7A.
+
+14:32:04 THERMAL WARNING
+Battery temperature exceeded warning threshold.
+
+14:32:16 FDIR WARNING
+Power subsystem anomaly detected.
+
+14:33:02 COMM INFO
+Telemetry packet transmission delayed by 1.2 seconds.
+```
+
+---
+
+# 12. PROCEDURES
+
+Create realistic simulated operational procedures.
+
+Example:
+
+```text
+Procedure ID: PWR-204
+
+Title:
+Battery Thermal Investigation
+
+Purpose:
+Investigate abnormal battery temperature increase.
+
+Step 1:
+Check battery current.
+
+Step 2:
+Check battery voltage.
+
+Step 3:
+Compare current telemetry against expected operating range.
+
+Step 4:
+Inspect recent subsystem events.
+
+Step 5:
+Escalate to power subsystem investigation if abnormal current persists.
+```
+
+---
+
+# 13. HISTORICAL INCIDENTS
+
+Create at least 10–20 simulated historical incidents.
+
+Each should include:
+
+* Incident ID
+* Date
+* Subsystem
+* Symptoms
+* Root cause or known resolution
+* Related procedure
+* Relevant telemetry/log references
+
+Use multiple subsystems and similar-but-not-identical incidents.
+
+---
+
+# 14. RAG ENGINE
+
+Index:
+
+* Mission logs
+* Procedures
+* Historical incidents
+* Telemetry summaries
+* Technical notes
+
+Every indexed chunk must preserve metadata.
+
+Example:
+
+```json
+{
+  "document_id": "INC-102",
+  "document_type": "incident",
+  "subsystem": "POWER",
+  "timestamp": "...",
+  "text": "...",
+  "source": "Historical Incident Database"
+}
+```
+
+Retrieval must return source metadata.
+
+---
+
+# 15. EVIDENCE ENGINE
+
+Every retrieved item must contain:
+
+* Source type
+* Document ID
+* Timestamp
+* Subsystem
+* Relevant text/value
+* Relevance score
+
+Example:
+
+```text
+SOURCE: Telemetry
+ID: TEL-4821
+TIME: 14:32:15
+SUBSYSTEM: POWER
+
+Battery Current = 18.7 A
+Expected = 15–17 A
+```
+
+Evidence IDs must be usable by the UI.
+
+Clicking an evidence citation must open its underlying record.
+
+---
+
+# 16. EVIDENCE VALIDATION
+
+Before displaying an AI response:
+
+1. Extract cited evidence IDs.
+2. Verify each ID exists.
+3. Verify the evidence was actually retrieved.
+4. Reject invalid citations.
+5. Prevent unsupported claims from being presented as evidence-backed.
+
+The system must never fabricate source IDs.
+
+---
+
+# 17. TELEMETRY CORRELATION
+
+Implement temporal correlation.
+
+Example:
+
+```text
+14:30
+Battery current increases
+        ↓
+14:32
+Battery temperature increases
+        ↓
+14:32
+FDIR warning
+        ↓
+14:33
+Communication delay
+```
+
+Use careful language:
+
+* preceded
+* followed
+* coincided with
+* correlated with
+* possible contributor
+
+Do not automatically claim causation.
+
+---
+
+# 18. INVESTIGATION PIPELINE
+
+Implement:
+
+```text
+Anomaly
+   ↓
+Retrieve telemetry
+   ↓
+Retrieve logs
+   ↓
+Retrieve procedures
+   ↓
+Retrieve historical incidents
+   ↓
+Correlate events
+   ↓
+Build evidence set
+   ↓
+Generate structured investigation
+   ↓
+Validate evidence
+   ↓
+Display investigation
+   ↓
+Record audit event
+```
+
+---
+
+# 19. STRUCTURED LLM OUTPUT
+
+The backend should use a structured response such as:
+
+```json
+{
+  "anomaly": "...",
+  "observed_facts": [],
+  "evidence": [],
+  "possible_causes": [],
+  "diagnostic_steps": [],
+  "recommendations": [],
+  "confidence": 0.82,
+  "limitations": []
+}
+```
+
+Validate this structure before returning it to the frontend.
+
+---
+
+# 20. MAIN APPLICATION SCREENS
+
+## SCREEN 1 — Mission Dashboard
+
+Show:
+
+* Spacecraft status
+* Active anomalies
+* Subsystem health
+* Recent alerts
+* Mission timeline
+* Investigation queue
+
+---
+
+## SCREEN 2 — Anomaly Center
+
+Show:
+
+* Anomaly ID
+* Timestamp
+* Subsystem
+* Severity
+* Status
+* Confidence
+* Investigation state
+
+Filters:
+
+* Severity
+* Subsystem
+* Time
+* Status
+
+---
+
+## SCREEN 3 — Investigation Workspace
+
+This is the primary judge-demo screen.
+
+Show:
+
+```text
+ANOMALY
+
+OBSERVED FACTS
+
+EVIDENCE
+
+POSSIBLE EXPLANATION
+
+DIAGNOSTIC STEPS
+
+CONFIDENCE
+
+LIMITATIONS
+```
+
+Evidence references must be clickable.
+
+---
+
+## SCREEN 4 — Evidence Explorer
+
+When an operator clicks evidence:
+
+```text
+Evidence ID
+Source Type
+Timestamp
+Subsystem
+Parameter
+Value
+Expected Range
+Original Record
+```
+
+---
+
+## SCREEN 5 — Telemetry Explorer
+
+Provide interactive charts for:
+
+* Battery current
+* Battery temperature
+* Voltage
+* Relevant subsystem parameters
+
+Display anomaly markers.
+
+Allow multiple telemetry parameters to be compared.
+
+---
+
+## SCREEN 6 — Incident Timeline
+
+Show:
+
+```text
+TIME → EVENT → SOURCE → SUBSYSTEM
+```
+
+Every event must have a source.
+
+---
+
+## SCREEN 7 — Audit Trail
+
+Show:
+
+* Timestamp
+* Actor
+* Action
+* Object
+* Evidence
+* Result
+
+Example:
+
+```text
+08:42:10
+Operator opened ANOM-004
+
+08:42:14
+RAG retrieval executed
+
+08:42:15
+TEL-4821 retrieved
+
+08:42:16
+PWR-204 retrieved
+
+08:42:19
+Investigation generated
+
+08:42:21
+Recommendation displayed
+```
+
+---
+
+# 21. COPILOT
+
+Provide an investigation assistant.
+
+Support queries such as:
+
+> Why was this anomaly detected?
+
+> What evidence supports this?
+
+> Have we seen something similar?
+
+> Which procedure applies?
+
+> What should I investigate next?
+
+> Show the timeline.
+
+The assistant must use the same evidence-grounded backend.
+
+It must NOT become an unrestricted general-purpose chatbot.
+
+---
+
+# 22. INVESTIGATION STATUS
+
+Use:
+
+```text
+NEW
+↓
+INVESTIGATING
+↓
+EVIDENCE COLLECTED
+↓
+DIAGNOSIS
+↓
+RECOMMENDATION
+↓
+REVIEWED
+↓
+CLOSED
+```
+
+Do not automatically mark incidents as resolved.
+
+---
+
+# 23. DEMO SCENARIO
+
+Build one polished end-to-end demo:
+
+## Battery Thermal Anomaly
+
+Sequence:
+
+1. Dashboard initially appears nominal.
+2. Battery current rises.
+3. Battery temperature rises.
+4. FDIR warning appears.
+5. Operator opens anomaly.
+6. Copilot retrieves telemetry.
+7. Copilot retrieves logs.
+8. Copilot retrieves procedure.
+9. Copilot retrieves similar historical incident.
+10. System correlates events.
+11. System explains the anomaly.
+12. System displays evidence.
+13. System recommends diagnostic steps.
+14. Operator opens evidence.
+15. Timeline is generated.
+16. Audit trail records the investigation.
+
+This should work from a clean startup.
+
+---
+
+# 24. DEMO MODE
+
+Create:
+
+> **LOAD DEMO INCIDENT**
+
+This should load the prepared anomaly and its associated data.
+
+The judge should not have to manually configure the system.
+
+---
+
+# 25. JUDGING OPTIMIZATION
+
+Optimize the prototype around:
+
+## Groundedness
+
+Answers are based on mission data.
+
+## Evidence Traceability
+
+Claims connect to actual source records.
+
+## Retrieval
+
+Relevant information is retrieved across different data types.
+
+## Workflow Usefulness
+
+The system makes anomaly investigation easier and faster.
+
+## Safety
+
+Facts, inferences and recommendations are clearly separated and no spacecraft commands can be executed.
+
+Do not optimize for superficial chatbot features.
+
+---
+
+# 26. INNOVATION
+
+The product's differentiator is the combination of:
+
+* Evidence-grounded RAG
+* Telemetry correlation
+* Historical incident matching
+* Procedure-aware diagnostics
+* Explainable recommendations
+* Auditable timelines
+* Investigation audit trails
+* Safety controls
+
+The result should feel like:
+
+> **Mission Investigation Workstation + AI Copilot**
+
+not:
+
+> Generic chatbot + space UI.
+
+---
+
+# 27. API
+
+Implement approximately:
+
+```text
+GET  /api/dashboard
+
+GET  /api/anomalies
+GET  /api/anomalies/{id}
+
+POST /api/investigations
+GET  /api/investigations/{id}
+
+POST /api/copilot/query
+
+GET  /api/evidence/{id}
+
+GET  /api/telemetry
+
+GET  /api/timeline/{incident_id}
+
+GET  /api/procedures
+GET  /api/incidents
+
+GET  /api/audit/{incident_id}
+```
+
+Use Pydantic models for request/response validation.
+
+---
+
+# 28. TESTING
+
+Implement tests for:
+
+## Retrieval
+
+* Relevant documents are retrieved.
+* Irrelevant documents are filtered.
+
+## Evidence
+
+* Citation IDs exist.
+* Invalid citations are rejected.
+
+## RAG
+
+* Responses contain evidence.
+* Insufficient evidence produces a safe response.
+
+## Safety
+
+* No spacecraft command API exists.
+* No command execution path exists.
+
+## Timeline
+
+* Events are correctly sorted.
+* Sources are preserved.
+
+## API
+
+* Core endpoints return valid responses.
+
+---
+
+# 29. SECURITY
+
+Never commit:
+
+* API keys
+* Passwords
+* Tokens
+* Secrets
+* Credentials
+
+Use:
+
+```text
+.env
+.env.example
+.gitignore
+```
+
+The actual `.env` must never enter Git.
+
+---
+
+# 30. REPOSITORY STRUCTURE
+
+```text
+mission-ops-copilot/
+│
+├── frontend/
+│   ├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   └── types/
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── models/
+│   │   ├── services/
+│   │   ├── rag/
+│   │   ├── correlation/
+│   │   ├── audit/
+│   │   └── safety/
+│   └── tests/
+│
+├── data/
+│   ├── telemetry/
+│   ├── logs/
+│   ├── procedures/
+│   └── incidents/
+│
+├── scripts/
+│   ├── generate_data.py
+│   └── seed_database.py
+│
+├── docs/
+│   ├── architecture.md
+│   ├── demo.md
+│   └── decisions.md
+│
+├── .env.example
+├── .gitignore
+├── README.md
+└── docker-compose.yml
+```
+
+---
+
+# 31. GITHUB / TECHFEST COMPLIANCE
+
+This section is mandatory.
+
+The official TECHFEST rules require a GitHub repository throughout the hackathon and state that organizers may monitor repository activity, commit history, progress and team contributions. Teams are expected to make meaningful and regular commits rather than uploading the project only at the end.
+
+Therefore:
+
+## NEVER
+
+* Build the entire project and push it at the end.
+* Manufacture commits.
+* Backdate commits.
+* Manipulate commit history.
+* Make fake progress commits.
+* Use an external developer.
+* Allow an unregistered person to contribute.
+* Copy another team's project.
+* Present externally developed work as the team's own.
+
+The official rules prohibit manipulating commit history and unauthorized external contributions.
+
+---
+
+# 32. COMMIT STRATEGY
+
+Make a meaningful commit whenever a real development milestone is completed.
+
+Do not optimize for the number of commits.
+
+Optimize for a **truthful development history**.
+
+Recommended progression:
+
+```text
+1. chore: initialize project structure
+
+2. feat: add mission data models
+
+3. feat: add simulated mission dataset
+
+4. feat: implement data ingestion
+
+5. feat: implement telemetry services
+
+6. feat: implement vector retrieval
+
+7. feat: add evidence citation system
+
+8. feat: implement anomaly correlation
+
+9. feat: implement investigation API
+
+10. feat: implement grounded copilot
+
+11. feat: add safety guardrails
+
+12. feat: add investigation workspace
+
+13. feat: add evidence explorer
+
+14. feat: add telemetry visualization
+
+15. feat: add incident timeline
+
+16. feat: add audit trail
+
+17. feat: add historical incident search
+
+18. test: add core system tests
+
+19. feat: add demo scenario
+
+20. fix: stabilize investigation workflow
+
+21. feat: polish mission dashboard
+
+22. docs: update architecture and demo
+
+23. chore: prepare final submission
+```
+
+These are **recommended milestones**, not artificial commits. Only create a commit when the corresponding work genuinely exists.
+
+---
+
+# 33. BEFORE EVERY COMMIT
+
+Perform:
+
+```text
+1. Complete the actual feature.
+2. Run relevant tests.
+3. Run the application.
+4. Verify the feature manually where appropriate.
+5. Review git diff.
+6. Check for secrets.
+7. Check that only legitimate team work is included.
+8. Write a truthful commit message.
+9. Commit.
+10. Push to the team's official repository.
+```
+
+Do not rewrite the history afterwards simply to make it look cleaner.
+
+---
+
+# 34. TEAM CONTRIBUTIONS
+
+Only registered team members may contribute.
+
+Each team member should make genuine contributions appropriate to their role.
+
+Possible work distribution:
+
+### Member 1 — Backend/RAG
+
+* FastAPI
+* Database
+* Retrieval
+* Evidence engine
+
+### Member 2 — Frontend
+
+* Dashboard
+* Investigation workspace
+* Evidence UI
+* Charts
+
+### Member 3 — AI/Data
+
+* Dataset
+* Correlation
+* Prompt/structured output
+* Historical incidents
+
+### Member 4 — Testing/Integration
+
+* API integration
+* Testing
+* Safety
+* Audit
+* Demo preparation
+
+The actual distribution should reflect what each person genuinely does.
+
+---
+
+# 35. AI-ASSISTED DEVELOPMENT
+
+TECHFEST permits AI-assisted development tools for research, coding assistance, debugging and documentation, subject to the rules.
+
+However:
+
+> Every team member must understand and be able to explain the complete project, including code, architecture, models, APIs and implementation.
+
+Therefore Antigravity must generate understandable, maintainable code.
+
+Avoid:
+
+* Massive unexplained files
+* Unused code
+* Hidden magic
+* Unnecessary dependencies
+* Features nobody on the team understands
+
+The team must be able to explain every major subsystem to judges.
+
+---
+
+# 36. ORIGINALITY
+
+The core solution must be created during the official hackathon period.
+
+Open-source libraries, frameworks, APIs and development tools may be used.
+
+Do not copy a complete existing project.
+
+Do not present another team's work as your own.
+
+The official rules explicitly prohibit cloning an existing complete solution.
+
+---
+
+# 37. README
+
+Create:
+
+```text
+# Mission Operations Copilot
+
+## Problem
+
+## Solution
+
+## Features
+
+## Architecture
+
+## Tech Stack
+
+## Data Sources
+
+## RAG Pipeline
+
+## Evidence Grounding
+
+## Telemetry Correlation
+
+## Safety Model
+
+## Audit Trail
+
+## Demo Scenario
+
+## Installation
+
+## Running Locally
+
+## API
+
+## Testing
+
+## Team
+
+## TECHFEST 2026–27
+## ST-10
+```
+
+Do not claim features that do not work.
+
+---
+
+# 38. FINAL PRESENTATION SUPPORT
+
+The system must make it easy to explain:
+
+## Problem
+
+Operators need to investigate anomalies across multiple mission data sources.
+
+## Solution
+
+An evidence-grounded AI copilot.
+
+## Architecture
+
+Frontend → API → RAG/Correlation/Audit → Data.
+
+## Implementation
+
+Real working simulated mission dataset and investigation pipeline.
+
+## Innovation
+
+Evidence-grounded reasoning + telemetry correlation + procedures + historical incidents + auditability.
+
+## Demo
+
+Battery thermal anomaly.
+
+## Impact
+
+Faster, more traceable and safer anomaly investigation.
+
+The official TECHFEST guidelines specifically state that teams should be prepared to explain the **Problem, Solution, Architecture, Implementation, Innovation, Demo and Impact**.
+
+---
+
+# 39. FINAL PRE-SUBMISSION CHECKLIST
+
+## PRODUCT
+
+* [ ] ST-10 problem is clearly addressed.
+* [ ] Dashboard works.
+* [ ] Anomaly Center works.
+* [ ] Investigation Workspace works.
+* [ ] Evidence Explorer works.
+* [ ] Telemetry charts work.
+* [ ] Historical incidents work.
+* [ ] Procedure retrieval works.
+* [ ] Timeline works.
+* [ ] Audit trail works.
+* [ ] Copilot works.
+
+## AI
+
+* [ ] RAG works.
+* [ ] Evidence is displayed.
+* [ ] Claims have citations.
+* [ ] Facts and inference are separated.
+* [ ] Recommendations are separated from facts.
+* [ ] Confidence is displayed.
+* [ ] Insufficient evidence is handled safely.
+
+## SAFETY
+
+* [ ] No real spacecraft connection.
+* [ ] No command execution.
+* [ ] Simulation-only.
+* [ ] Human review required.
+* [ ] Safety notice visible.
+
+## DEMO
+
+* [ ] Demo incident loads.
+* [ ] Complete investigation works.
+* [ ] Evidence can be opened.
+* [ ] Timeline works.
+* [ ] Audit trail works.
+* [ ] Application can recover from errors.
+
+## CODE
+
+* [ ] Tests pass.
+* [ ] No secrets committed.
+* [ ] `.env` ignored.
+* [ ] README complete.
+* [ ] Architecture documented.
+* [ ] Code is understandable.
+
+## GITHUB
+
+* [ ] Official repository exists.
+* [ ] Repository is maintained throughout development.
+* [ ] Meaningful commits exist.
+* [ ] Commits reflect genuine work.
+* [ ] Commit history has not been manipulated.
+* [ ] Only registered members contributed.
+* [ ] Team members can explain their contributions.
+* [ ] No external developer contributed.
+* [ ] No copied complete solution.
+
+---
+
+# 40. DEFINITION OF DONE
+
+The project is DONE only when this complete flow works:
+
+```text
+MISSION DASHBOARD
+       ↓
+ANOMALY
+       ↓
+INVESTIGATION
+       ↓
+TELEMETRY RETRIEVAL
+       ↓
+LOG RETRIEVAL
+       ↓
+PROCEDURE RETRIEVAL
+       ↓
+HISTORICAL INCIDENT RETRIEVAL
+       ↓
+CORRELATION
+       ↓
+EVIDENCE SET
+       ↓
+GROUNDED AI ANALYSIS
+       ↓
+EVIDENCE VALIDATION
+       ↓
+FACTS + INFERENCE + RECOMMENDATION
+       ↓
+DIAGNOSTIC STEPS
+       ↓
+TIMELINE
+       ↓
+AUDIT TRAIL
+       ↓
+OPERATOR REVIEW
+```
+
+---
+
+# 41. FINAL PRODUCT STATEMENT
+
+The product should communicate:
+
+> **An evidence-grounded mission operations copilot that helps operators investigate spacecraft anomalies faster while showing exactly what is known, what is inferred, what evidence supports it, and what should be investigated next.**
+
+The winning demonstration should not be:
+
+> "Our AI can chat about space."
+
+It should be:
+
+> **"An anomaly occurred. Our system correlated the telemetry and logs, retrieved the applicable procedure and similar historical incident, showed the evidence behind every conclusion, separated facts from inference, recommended the next diagnostic steps, generated an auditable timeline, and recorded the entire investigation — without ever issuing a spacecraft command."**
+
+---
+
+# 42. ANTIGRAVITY EXECUTION ORDER
+
+Implement in this order:
+
+```text
+PHASE 1
+Repository + project structure
+
+PHASE 2
+Mission data + database
+
+PHASE 3
+Telemetry/log/procedure/incident APIs
+
+PHASE 4
+RAG retrieval
+
+PHASE 5
+Evidence validation
+
+PHASE 6
+Telemetry correlation
+
+PHASE 7
+Investigation API
+
+PHASE 8
+Grounded AI
+
+PHASE 9
+Safety guardrails
+
+PHASE 10
+Investigation UI
+
+PHASE 11
+Evidence Explorer
+
+PHASE 12
+Telemetry charts
+
+PHASE 13
+Timeline
+
+PHASE 14
+Audit trail
+
+PHASE 15
+Testing
+
+PHASE 16
+Demo mode
+
+PHASE 17
+UI polish
+
+PHASE 18
+Documentation
+
+PHASE 19
+Final verification
+```
+
+After each meaningful completed phase, make the corresponding **truthful Git commit and push it**.
+
+Do not wait until the end.
+
+---
+
+# FINAL PRIORITY
+
+If time becomes limited, do NOT add unnecessary features.
+
+Prioritize:
+
+```text
+1. Evidence correctness
+2. Safety
+3. RAG/retrieval
+4. Telemetry correlation
+5. Investigation workflow
+6. Evidence citations
+7. Audit trail
+8. Working demo
+9. Tests
+10. UI polish
+```
+
+A smaller system that is **reliable, explainable and demonstrable** is preferable to a large system with unfinished features.
+
+BUILD FOR:
+
+**TRUST. TRACEABILITY. SAFETY. OPERATOR VALUE.**
