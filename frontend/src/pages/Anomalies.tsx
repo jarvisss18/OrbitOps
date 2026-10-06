@@ -1,10 +1,19 @@
-import { mockAnomalies } from '../data/anomalies';
+import { useEffect, useState } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
+import { Anomaly } from '../data/anomalies'; // assuming interface exported
 
 export default function Anomalies() {
   const navigate = useNavigate();
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
+  
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/anomalies')
+      .then(res => res.json())
+      .then(data => setAnomalies(data))
+      .catch(err => console.error("Failed to load anomalies", err));
+  }, []);
 
   return (
     <div className="p-6 h-full flex flex-col max-w-7xl mx-auto">
@@ -81,7 +90,7 @@ export default function Anomalies() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/50">
-              {mockAnomalies.map((anom) => (
+              {anomalies.map((anom) => (
                 <tr 
                   key={anom.id} 
                   onClick={() => navigate('/investigations')}
